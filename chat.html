@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>세하와 대화</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="chat-container">
+        <div class="header">
+            <h2>세하 연구 세션</h2>
+            <span>연구자: {{ user }}</span>
+            <button onclick="showResearchData()">연구 데이터</button>
+        </div>
+
+        <div id="messages" class="messages"></div>
+
+        <div class="input-area">
+            <textarea id="messageInput" placeholder="메시지 입력..."></textarea>
+            <button onclick="sendMessage()">전송</button>
+        </div>
+
+        <div id="emotionDisplay" class="emotion-display"></div>
+    </div>
+
+    <script>
+    async function sendMessage() {
+        const input = document.getElementById('messageInput');
+        const message = input.value.trim();
+        if (!message) return;
+
+        // 사용자 메시지 표시
+        addMessage('user', message);
+        input.value = '';
+
+        // API 호출
+        try {
+            const response = await fetch('/chat', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({message: message})
+            });
+
+            const data = await response.json();
+
+            // 세하 응답 표시
+            addMessage('assistant', data.response);
+
+            // 감정 상태 표시
+            if (data.emotion_state) {
+                displayEmotions(data.emotion_state);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+    function addMessage(role, content) {
+        const messagesDiv = document.getElementById('messages');
+        const messageEl = document.createElement('div');
+        messageEl.className = `message ${role}`;
+
+        // #STATE 부분 분리
+        const stateIndex = content.indexOf('#STATE');
+        if (stateIndex !== -1) {
+            messageEl.textContent = content.substring(0, stateIndex).trim();
+        } else {
+            messageEl.textContent = content;
+        }
+
+        messagesDiv.appendChild(messageEl);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    function displayEmotions(emotions) {
+        const display = document.getElementById('emotionDisplay');
+        display.innerHTML = '<h4>감정 상태</h4>';
+        for (const [key, value] of Object.entries(emotions)) {
+            display.innerHTML += `<div>${key}: ${(value * 100).toFixed(0)}%</div>`;
+        }
+    }
+
+    async function showResearchData() {
+        const response = await fetch('/research_data');
+        const data = await response.json();
+        console.log('Research Data:', data);
+        // 여기에 데이터 시각화 추가 가능
+    }
+
+    // Enter 키로 전송
+    document.getElementById('messageInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+    </script>
+</body>
+</html>

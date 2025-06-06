@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>세하 - 감정 연구 챗봇</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="login-container">
+        <h1>세하 연구 프로젝트</h1>
+        <p>감정 연구를 위한 AI 파트너</p>
+        <input type="text" id="username" placeholder="연구자 이름 입력">
+        <button onclick="login()">시작하기</button>
+    </div>
+
+    <script>
+    function login() {
+        const username = document.getElementById('username').value;
+        if (username) {
+            fetch('/login', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({username: username})
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = '/';
+                }
+            });
+        }
+    }
+    </script>
+</body>
+</html>
