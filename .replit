@@ -1,0 +1,21 @@
+entrypoint = "main.py"
+modules = ["python-3.11:v14-20231207-2f65342"]
+
+hidden = [".pythonlibs"]
+
+[nix]
+channel = "stable-23_05"
+packages = ["gdb", "libxcrypt", "python311Packages.uvicorn"]
+
+[unitTest]
+language = "python3"
+
+[deployment]
+# TS 폴더로 이동 후 main.py 실행
+run = ["bash", "-lc", "cd TS && uvicorn main:app --host 0.0.0.0 --port 5000"]
+healthCheckPath = "/anthropic/Seha/health"
+deploymentTarget = "cloudrun"
+
+[[ports]]
+localPort = 5000
+externalPort = 80
